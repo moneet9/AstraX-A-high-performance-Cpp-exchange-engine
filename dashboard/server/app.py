@@ -12,6 +12,16 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'build', 
 
 import exchange_simulator as ex
 from agents import RandomAgent, MarketMakerAgent
+from ai import (
+    archive_regime_snapshot,
+    LMStudioClient,
+    generate_market_analysis_report,
+    generate_simulation_result_summary,
+    generate_strategy_plan,
+    find_similar_regimes,
+    regime_text,
+    simulation_summary_metrics,
+)
 
 try:
     import websockets
@@ -22,6 +32,9 @@ except ImportError:
 
 class LiveExchange:
     """Runs the exchange simulation and broadcasts state via WebSocket."""
+
+    regime_archive_interval = 100
+    max_regime_archive_size = 120
 
     def __init__(self):
         self.engine = ex.MatchingEngine()
@@ -38,6 +51,8 @@ class LiveExchange:
         self.running = False
         # Latency tracking: ring buffer of last 1000 submit latencies (nanoseconds)
         self.latency_samples: collections.deque = collections.deque(maxlen=1000)
+        self.llm = LMStudioClient()
+        self.regime_archive: list[dict] = []
 
     def _compute_latency_stats(self) -> dict | None:
         """Compute latency histogram summary from recent samples."""
@@ -128,7 +143,54 @@ class LiveExchange:
             if latency_stats:
                 msg["latency"] = latency_stats
 
+        if self.step_count % self.regime_archive_interval == 0:
+            self._archive_regime_state()
+
         return msg
+
+    def _archive_regime_state(self) -> None:
+        """Store the current market regime for later similarity lookup."""
+        snapshot = self.snapshot()
+        try:
+            archive_regime_snapshot(
+                self.llm,
+                self.regime_archive,
+                snapshot,
+                max_items=self.max_regime_archive_size,
+            )
+        except RuntimeError:
+            # Keep the simulation running if local embeddings are unavailable.
+            pass
+
+    def compare_regime(self, limit: int = 3) -> dict:
+        """Compare the current market regime against archived snapshots."""
+        snapshot = self.snapshot()
+        current_description = regime_text(snapshot)
+        try:
+            matches = find_similar_regimes(
+                self.llm,
+                snapshot,
+                self.regime_archive,
+                limit=limit,
+            )
+            return {
+                "type": "regime_similarity",
+                "ok": True,
+                "current_step": snapshot.get("step"),
+                "current_description": current_description,
+                "archive_size": len(self.regime_archive),
+                "matches": matches,
+            }
+        except RuntimeError as exc:
+            return {
+                "type": "regime_similarity",
+                "ok": False,
+                "current_step": snapshot.get("step"),
+                "current_description": current_description,
+                "archive_size": len(self.regime_archive),
+                "matches": [],
+                "error": str(exc),
+            }
 
     def submit_binary_order(self, payload: bytes) -> list[bytes]:
         """Decode a binary order frame, submit it, and return encoded fill frames."""
@@ -146,6 +208,35 @@ class LiveExchange:
         for fill in fills:
             encoded_fills.append(ex.BinaryProtocol.encode_fill(fill))
         return encoded_fills
+
+    def snapshot(self) -> dict:
+        """Return the latest exchange state for analysis requests."""
+        book = self.engine.book()
+        best_bid = book.best_bid_price()
+        best_ask = book.best_ask_price()
+        return {
+            "type": "snapshot",
+            "step": self.step_count,
+            "book": {
+                "best_bid": best_bid,
+                "best_ask": best_ask,
+                "mid": (best_bid + best_ask) // 2 if best_bid and best_ask else None,
+                "spread": best_ask - best_bid if best_bid and best_ask else None,
+                "bid_depth": book.bid_depth(),
+                "ask_depth": book.ask_depth(),
+            },
+            "fills": list(self.recent_fills),
+            "agents": [
+                {
+                    "name": a.name,
+                    "pnl": a.pnl,
+                    "inventory": a.inventory,
+                    "fills": len(a.fills),
+                }
+                for a in self.agents
+            ],
+            "latency": self._compute_latency_stats(),
+        }
 
 
 exchange = LiveExchange()
@@ -191,11 +282,34 @@ async def handler(websocket):
         await websocket.send(json.dumps({
             "type": "init",
             "agents": [a.name for a in exchange.agents],
+            "llm": {
+                "chat_model": exchange.llm.config.chat_model,
+                "embed_model": exchange.llm.config.embed_model,
+            },
         }))
         async for message in websocket:
             data = json.loads(message)
             if data.get("command") == "reset":
                 exchange.__init__()
+                await websocket.send(json.dumps({"type": "reset", "ok": True}))
+            elif data.get("command") == "analysis":
+                analysis_type = data.get("analysis_type", "strategy_plan")
+                snapshot = exchange.snapshot()
+                if analysis_type == "market_report":
+                    content = generate_market_analysis_report(exchange.llm, snapshot)
+                elif analysis_type == "simulation_summary":
+                    metrics = simulation_summary_metrics(snapshot)
+                    content = generate_simulation_result_summary(exchange.llm, metrics)
+                else:
+                    content = generate_strategy_plan(exchange.llm, snapshot)
+                await websocket.send(json.dumps({
+                    "type": "analysis",
+                    "analysis_type": analysis_type,
+                    "content": content,
+                }))
+            elif data.get("command") == "regime_similarity":
+                limit = int(data.get("limit", 3))
+                await websocket.send(json.dumps(exchange.compare_regime(limit=limit)))
     finally:
         clients.discard(websocket)
 

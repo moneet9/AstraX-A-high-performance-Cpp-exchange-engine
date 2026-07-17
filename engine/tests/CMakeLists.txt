@@ -4,6 +4,7 @@ add_executable(engine_tests
     test_memory_pool.cpp
     test_ring_buffer.cpp
     test_binary_protocol.cpp
+    test_fuzz_matching.cpp
     test_order_book.cpp
     test_matching_engine.cpp
     test_stress_matching.cpp
