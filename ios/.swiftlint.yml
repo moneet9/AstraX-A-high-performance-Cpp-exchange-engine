@@ -1,0 +1,17 @@
+included:
+  - App
+  - Packages
+excluded:
+  - Packages/**/.build
+  - AstraX.xcodeproj
+only_rules:
+  - trailing_whitespace
+  - force_cast
+  - force_try
+  - type_name
+  - identifier_name
+line_length:
+  warning: 140
+  error: 180
+identifier_name:
+  min_length: 2

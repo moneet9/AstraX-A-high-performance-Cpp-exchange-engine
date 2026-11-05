@@ -1,0 +1,13 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Account" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Account" } } } },
+    "ASTR" : { "comment" : "Simulated exchange symbol", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "ASTR" } } } },
+    "Buy" : { "comment" : "Buy side label, paired with text and blue cue", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Buy" } } } },
+    "Orders" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Orders" } } } },
+    "Portfolio" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Portfolio" } } } },
+    "Trade" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Trade" } } } },
+    "Watchlist" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Watchlist" } } } }
+  },
+  "version" : "1.0"
+}

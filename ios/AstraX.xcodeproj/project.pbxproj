@@ -1,0 +1,75 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A00000000000000000000001 /* AstraXApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000001 /* AstraXApp.swift */; };
+		A00000000000000000000002 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000002 /* PrivacyInfo.xcprivacy */; };
+		A00000000000000000000003 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000003 /* Localizable.xcstrings */; };
+		A00000000000000000000004 /* Features in Frameworks */ = {isa = PBXBuildFile; productRef = C00000000000000000000001 /* Features */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B00000000000000000000001 /* AstraXApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AstraXApp.swift; sourceTree = "<group>"; };
+		B00000000000000000000002 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B00000000000000000000003 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		B00000000000000000000004 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		B00000000000000000000005 /* AstraX.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AstraX.entitlements; sourceTree = "<group>"; };
+		B00000000000000000000006 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		B00000000000000000000007 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		B00000000000000000000008 /* AstraX.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AstraX.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D00000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000004 /* Features in Frameworks */,); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E00000000000000000000001 = {isa = PBXGroup; children = (E00000000000000000000002 /* App */, E00000000000000000000003 /* Configuration */, E00000000000000000000004 /* Products */,); sourceTree = "<group>"; };
+		E00000000000000000000002 /* App */ = {isa = PBXGroup; children = (B00000000000000000000001 /* AstraXApp.swift */, B00000000000000000000002 /* Info.plist */, B00000000000000000000003 /* PrivacyInfo.xcprivacy */, B00000000000000000000004 /* Localizable.xcstrings */, B00000000000000000000005 /* AstraX.entitlements */,); path = App; sourceTree = "<group>"; };
+		E00000000000000000000003 /* Configuration */ = {isa = PBXGroup; children = (B00000000000000000000006 /* Debug.xcconfig */, B00000000000000000000007 /* Release.xcconfig */,); path = Configuration; sourceTree = "<group>"; };
+		E00000000000000000000004 /* Products */ = {isa = PBXGroup; children = (B00000000000000000000008 /* AstraX.app */,); name = Products; sourceTree = "<group>"; };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F00000000000000000000001 /* AstraX */ = {isa = PBXNativeTarget; buildConfigurationList = 100000000000000000000002 /* Build configuration list for PBXNativeTarget "AstraX" */; buildPhases = (110000000000000000000001 /* Sources */, D00000000000000000000001 /* Frameworks */, 120000000000000000000001 /* Resources */,); buildRules = (); dependencies = (); name = AstraX; packageProductDependencies = (C00000000000000000000001 /* Features */,); productName = AstraX; productReference = B00000000000000000000008 /* AstraX.app */; productType = "com.apple.product-type.application"; };
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		130000000000000000000001 /* Project object */ = {isa = PBXProject; attributes = {BuildIndependentTargetsInParallel = 1; LastSwiftUpdateCheck = 1600; LastUpgradeCheck = 1600; TargetAttributes = {F00000000000000000000001 = {CreatedOnToolsVersion = 16.0; }; }; }; buildConfigurationList = 100000000000000000000001 /* Build configuration list for PBXProject "AstraX" */; compatibilityVersion = "Xcode 15.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base,); mainGroup = E00000000000000000000001; packageReferences = (140000000000000000000001 /* XCLocalSwiftPackageReference "Packages/Features" */,); productRefGroup = E00000000000000000000004 /* Products */; projectDirPath = ""; projectRoot = ""; targets = (F00000000000000000000001 /* AstraX */,); };
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		120000000000000000000001 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000002 /* PrivacyInfo.xcprivacy in Resources */, A00000000000000000000003 /* Localizable.xcstrings in Resources */,); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		110000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000001 /* AstraXApp.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		150000000000000000000001 /* Debug project */ = {isa = XCBuildConfiguration; buildSettings = {CLANG_ENABLE_MODULES = YES; SWIFT_VERSION = 6.0; }; name = Debug; };
+		150000000000000000000002 /* Release project */ = {isa = XCBuildConfiguration; buildSettings = {CLANG_ENABLE_MODULES = YES; SWIFT_VERSION = 6.0; }; name = Release; };
+		150000000000000000000003 /* Debug app */ = {isa = XCBuildConfiguration; baseConfigurationReference = B00000000000000000000006 /* Debug.xcconfig */; buildSettings = {CODE_SIGN_ENTITLEMENTS = App/AstraX.entitlements; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = App/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.astrax.paper; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = iphoneos; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = "1,2"; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; }; name = Debug; };
+		150000000000000000000004 /* Release app */ = {isa = XCBuildConfiguration; baseConfigurationReference = B00000000000000000000007 /* Release.xcconfig */; buildSettings = {CODE_SIGN_ENTITLEMENTS = App/AstraX.entitlements; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = App/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.astrax.paper; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = iphoneos; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = "1,2"; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; }; name = Release; };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		100000000000000000000001 /* Build configuration list for PBXProject "AstraX" */ = {isa = XCConfigurationList; buildConfigurations = (150000000000000000000001 /* Debug project */, 150000000000000000000002 /* Release project */,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		100000000000000000000002 /* Build configuration list for PBXNativeTarget "AstraX" */ = {isa = XCConfigurationList; buildConfigurations = (150000000000000000000003 /* Debug app */, 150000000000000000000004 /* Release app */,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		140000000000000000000001 /* XCLocalSwiftPackageReference "Packages/Features" */ = {isa = XCLocalSwiftPackageReference; relativePath = Packages/Features; };
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C00000000000000000000001 /* Features */ = {isa = XCSwiftPackageProductDependency; package = 140000000000000000000001 /* XCLocalSwiftPackageReference "Packages/Features" */; productName = Features; };
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 130000000000000000000001 /* Project object */;
+}
+

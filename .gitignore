@@ -1,0 +1,15 @@
+cmake-build-*/
+.cache/
+compile_commands.json
+*.o
+*.a
+.superpowers/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+.env
+.env.*
+!.env.example
+dashboard/frontend/dist/
+build/

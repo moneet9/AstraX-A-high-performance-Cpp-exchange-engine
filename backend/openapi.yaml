@@ -1,0 +1,191 @@
+openapi: 3.1.0
+info:
+  title: AstraX Paper Trading API
+  version: 1.0.0
+  description: Simulated trading only. No broker connectivity. Prices and quantities are integers; prices use engine ticks.
+servers:
+  - url: http://localhost:8780
+paths:
+  /v1/auth/register:
+    post:
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/Credentials'}
+      responses: {'201': {description: Created account and token pair}}
+  /v1/auth/login:
+    post:
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/Credentials'}
+      responses: {'200': {description: Authenticated token pair}, '401': {description: Invalid credentials}}
+  /v1/auth/apple:
+    post:
+      operationId: signInWithApple
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, required: [identity_token], properties: {identity_token: {type: string}}}
+      responses: {'200': {description: Authenticated token pair}}
+  /v1/auth/refresh:
+    post:
+      operationId: refreshTokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, required: [refresh_token], properties: {refresh_token: {type: string}}}
+      responses: {'200': {description: Rotated token pair}, '401': {description: Invalid or reused token}}
+  /v1/auth/logout:
+    post:
+      operationId: logout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, required: [refresh_token], properties: {refresh_token: {type: string}}}
+      responses: {'200': {description: Refresh token invalidated}}
+  /v1/accounts:
+    get:
+      security: [{BearerAuth: []}]
+      operationId: listAccounts
+      responses: {'200': {description: User paper accounts}}
+  /v1/symbols:
+    get:
+      operationId: listSymbols
+      responses: {'200': {description: Simulated symbols, integer price scale and tick size}}
+  /v1/market/{symbol}/book:
+    get:
+      operationId: getBookSnapshot
+      parameters:
+        - {in: path, name: symbol, required: true, schema: {type: string}}
+      responses: {'200': {description: Full integer-tick order book snapshot for reconnect and resynchronization}}
+  /v1/accounts/{account_id}/orders:
+    parameters:
+      - {in: path, name: account_id, required: true, schema: {type: integer}}
+    get:
+      security: [{BearerAuth: []}]
+      operationId: listOrders
+      responses: {'200': {description: Account orders}}
+    post:
+      security: [{BearerAuth: []}]
+      operationId: placeOrder
+      parameters:
+        - {in: header, name: Idempotency-Key, required: true, schema: {type: string, minLength: 16, maxLength: 128}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/OrderRequest'}
+      responses: {'201': {description: Accepted paper order}}
+  /v1/accounts/{account_id}/orders/{order_id}/cancel:
+    post:
+      security: [{BearerAuth: []}]
+      operationId: cancelOrder
+      parameters:
+        - {in: path, name: account_id, required: true, schema: {type: integer}}
+        - {in: path, name: order_id, required: true, schema: {type: integer}}
+      responses: {'200': {description: Cancelled order}}
+  /v1/accounts/{account_id}/orders/{order_id}/replace:
+    post:
+      security: [{BearerAuth: []}]
+      operationId: replaceOrder
+      parameters:
+        - {in: path, name: account_id, required: true, schema: {type: integer}}
+        - {in: path, name: order_id, required: true, schema: {type: integer}}
+        - {in: header, name: Idempotency-Key, required: true, schema: {type: string}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/OrderRequest'}
+      responses: {'200': {description: Cancel and resubmit paper order}}
+  /v1/accounts/{account_id}/positions:
+    get:
+      security: [{BearerAuth: []}]
+      operationId: listPositions
+      parameters:
+        - {in: path, name: account_id, required: true, schema: {type: integer}}
+      responses: {'200': {description: Account positions}}
+  /v1/accounts/{account_id}/executions:
+    get:
+      security: [{BearerAuth: []}]
+      operationId: listExecutions
+      parameters:
+        - {in: path, name: account_id, required: true, schema: {type: integer}}
+      responses: {'200': {description: Recent account executions}}
+  /v1/candles/{symbol}:
+    get:
+      operationId: getCandles
+      parameters:
+        - {in: path, name: symbol, required: true, schema: {type: string}}
+        - {in: query, name: interval_seconds, schema: {type: integer, minimum: 1, maximum: 86400}}
+        - {in: query, name: limit, schema: {type: integer, minimum: 1, maximum: 1000}}
+      responses: {'200': {description: Integer-tick OHLC candles}}
+  /v1/ai/strategy-plan:
+    post:
+      security: [{BearerAuth: []}]
+      operationId: getStrategyPlan
+      responses: {'200': {description: Informational analysis, not financial advice}}
+  /v1/ai/market-report:
+    post:
+      security: [{BearerAuth: []}]
+      operationId: getMarketReport
+      responses: {'200': {description: Informational analysis, not financial advice}}
+  /v1/ai/regime-similarity:
+    post:
+      security: [{BearerAuth: []}]
+      operationId: getRegimeSimilarity
+      responses: {'200': {description: Informational analysis, not financial advice}}
+  /v1/account:
+    delete:
+      security: [{BearerAuth: []}]
+      operationId: deleteAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, required: [confirmation], properties: {confirmation: {const: DELETE}}}
+      responses: {'200': {description: Deleted user and account data}}
+  /v1/push-tokens:
+    post:
+      security: [{BearerAuth: []}]
+      operationId: registerPushToken
+      parameters:
+        - {in: header, name: X-APNS-Token, required: true, schema: {type: string}}
+      responses: {'200': {description: APNs device token registered}}
+  /v1/market:
+    get:
+      operationId: marketWebSocket
+      description: WebSocket upgrade. Send auth token first, then subscribe, unsubscribe, or resync messages. Snapshot precedes sequenced book updates; heartbeat is sent while idle.
+      responses: {'101': {description: WebSocket market stream}}
+components:
+  securitySchemes:
+    BearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+  schemas:
+    Credentials:
+      type: object
+      required: [email, password]
+      properties:
+        email: {type: string, minLength: 3, maxLength: 320}
+        password: {type: string, minLength: 12, maxLength: 128}
+    OrderRequest:
+      type: object
+      additionalProperties: false
+      required: [symbol, side, type, quantity]
+      properties:
+        symbol: {type: string, maxLength: 24}
+        side: {type: string, enum: [buy, sell]}
+        type: {type: string, enum: [market, limit, stop, stop_limit, iceberg, pegged]}
+        quantity: {type: integer, minimum: 1, maximum: 1000000}
+        price_ticks: {type: integer, minimum: 0}
+        stop_price_ticks: {type: integer, minimum: 0}
+        visible_quantity: {type: integer, minimum: 0}
+        peg_offset_ticks: {type: integer}
+        tif: {type: string, enum: [GTC, IOC, FOK]}

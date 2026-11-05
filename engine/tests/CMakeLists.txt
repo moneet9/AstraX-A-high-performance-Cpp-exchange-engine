@@ -1,0 +1,23 @@
+# engine/tests/CMakeLists.txt
+add_executable(engine_tests
+    test_types.cpp
+    test_memory_pool.cpp
+    test_ring_buffer.cpp
+    test_binary_protocol.cpp
+    test_fuzz_matching.cpp
+    test_order_book.cpp
+    test_matching_engine.cpp
+    test_stress_matching.cpp
+    test_multi_asset_parallel.cpp
+    test_ioc_fok.cpp
+    test_iceberg.cpp
+    test_stop_orders.cpp
+    test_pegged.cpp
+    test_auction.cpp
+    test_multi_asset.cpp
+)
+target_link_libraries(engine_tests PRIVATE engine GTest::gtest_main)
+include(GoogleTest)
+gtest_discover_tests(engine_tests)
+
+# AstraX repo sync
