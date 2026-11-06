@@ -112,6 +112,15 @@ public struct TradeView: View {
                         if let request = try? model.makeRequest(), request.priceTicks > 0 {
                             reviewRow("Limit price", value: PriceFormatting.string(ticks: request.priceTicks))
                         }
+                        if let request = try? model.makeRequest(), request.stopPriceTicks > 0 {
+                            reviewRow("Stop price", value: PriceFormatting.string(ticks: request.stopPriceTicks))
+                        }
+                        if model.kind == .iceberg {
+                            reviewRow("Visible quantity", value: "\(model.visibleQuantityText) shares")
+                        }
+                        if model.kind == .pegged {
+                            reviewRow("Peg offset", value: "\(model.pegOffsetText) ticks")
+                        }
                         reviewRow("Time in force", value: model.tif.rawValue)
                     }
                 }

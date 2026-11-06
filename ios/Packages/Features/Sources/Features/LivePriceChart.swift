@@ -5,8 +5,12 @@ import SwiftUI
 
 public struct LivePriceChart: View {
     public let points: [ChartPoint]
+    public let latestPriceTicks: Int64?
 
-    public init(points: [ChartPoint]) { self.points = points }
+    public init(points: [ChartPoint], latestPriceTicks: Int64? = nil) {
+        self.points = points
+        self.latestPriceTicks = latestPriceTicks
+    }
 
     public var body: some View {
         Canvas { context, size in
@@ -23,14 +27,17 @@ public struct LivePriceChart: View {
         .drawingGroup()
         .frame(height: 160)
         .accessibilityLabel("Live simulated price chart")
-        .accessibilityValue(points.last.map { "Price line, normalized level \($0.yBasisPoints) basis points" } ?? "Waiting for price data")
+        .accessibilityValue(latestPriceTicks.map { "Latest simulated price \(PriceFormatting.string(ticks: $0))" } ?? "Waiting for price data")
     }
 }
 
 public struct MarketScreen: View {
+    @Environment(\.scenePhase) private var scenePhase
+    private let isActive: Bool
     @State private var model: MarketViewModel
 
-    public init(dependencies: AppDependencies) {
+    public init(dependencies: AppDependencies, isActive: Bool = true) {
+        self.isActive = isActive
         _model = State(initialValue: MarketViewModel(hub: dependencies.marketData, api: dependencies.api,
                                                     repository: dependencies.candleRepository))
     }
@@ -64,7 +71,7 @@ public struct MarketScreen: View {
                                 }
                             }
                         }
-                        LivePriceChart(points: model.chartPoints)
+                        LivePriceChart(points: model.chartPoints, latestPriceTicks: model.book?.midpointTicks)
                         HStack { Text("1m candles"); Spacer(); Text("Integer tick prices") }
                             .font(.caption2).foregroundStyle(AstraXTheme.secondaryText)
                     }
@@ -81,7 +88,10 @@ public struct MarketScreen: View {
         .background(AstraXTheme.background)
         .navigationTitle("Market")
         .navigationBarTitleDisplayMode(.inline)
-        .task(id: model.symbol) { await model.start() }
+        .task(id: "\(model.symbol)-\(isActive)-\(scenePhase == .active)") {
+            guard isActive, scenePhase == .active else { await model.stop(); return }
+            await model.start()
+        }
         .onDisappear { Task { await model.stop() } }
     }
 }

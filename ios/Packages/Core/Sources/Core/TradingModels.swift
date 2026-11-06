@@ -76,22 +76,29 @@ public struct TradePrint: Codable, Sendable, Equatable, Identifiable {
 }
 
 public struct ExecutionFill: Codable, Sendable, Equatable, Identifiable {
+    public let executionID: Int64?
     public let orderID: Int64
     public let symbol: String
     public let side: OrderSide
     public let priceTicks: Int64
     public let quantity: Int64
-    public var id: String { "\(orderID):\(priceTicks):\(quantity)" }
+    public let filledQuantity: Int64?
+    public var id: String { executionID.map { String($0) } ?? "\(orderID):\(priceTicks):\(quantity)" }
 
-    public init(orderID: Int64, symbol: String, side: OrderSide, priceTicks: Int64, quantity: Int64) {
+    public init(executionID: Int64? = nil, orderID: Int64, symbol: String, side: OrderSide,
+                priceTicks: Int64, quantity: Int64, filledQuantity: Int64? = nil) {
+        self.executionID = executionID
         self.orderID = orderID; self.symbol = symbol; self.side = side
         self.priceTicks = priceTicks; self.quantity = quantity
+        self.filledQuantity = filledQuantity
     }
 
     enum CodingKeys: String, CodingKey {
         case symbol, side, quantity
+        case executionID = "execution_id"
         case orderID = "order_id"
         case priceTicks = "price_ticks"
+        case filledQuantity = "filled_quantity"
     }
 }
 

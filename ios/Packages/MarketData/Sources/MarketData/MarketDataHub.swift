@@ -37,7 +37,9 @@ public actor MarketDataHub {
 
     public func executionUpdates() -> AsyncStream<PrivateExecutionEvent> {
         let id = UUID()
-        let pair = AsyncStream<PrivateExecutionEvent>.makeStream(bufferingPolicy: .bufferingNewest(32))
+        // Fill events are state-changing commands; never discard older fills when a
+        // consumer is briefly busy. The orders screen reconciles with REST on resume.
+        let pair = AsyncStream<PrivateExecutionEvent>.makeStream(bufferingPolicy: .unbounded)
         executionContinuations[id] = pair.continuation
         pair.continuation.onTermination = { @Sendable [weak self] _ in
             Task { await self?.removeExecutionContinuation(id) }

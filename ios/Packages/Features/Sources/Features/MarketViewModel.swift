@@ -21,6 +21,7 @@ public final class MarketViewModel {
     private let aggregator = CandleAggregator(intervalSeconds: 60)
     private let consumerID = UUID()
     private var lastSavedBucket: Int64 = 0
+    private var runGeneration: UInt64 = 0
 
     public init(symbol: String = "ASTR", hub: MarketDataHub, api: APIClient, repository: CandleRepository?) {
         self.symbol = symbol
@@ -30,9 +31,13 @@ public final class MarketViewModel {
     }
 
     public func start() async {
+        runGeneration &+= 1
+        let generation = runGeneration
         await loadHistory()
+        guard generation == runGeneration, !Task.isCancelled else { return }
         let stream = await hub.updates()
         await hub.connect(symbol: symbol, consumerID: consumerID)
+        guard generation == runGeneration, !Task.isCancelled else { return }
         isConnected = true
         for await update in stream {
             guard !Task.isCancelled else { break }
@@ -45,11 +50,13 @@ public final class MarketViewModel {
                 await persistIfNeeded(values)
             }
         }
+        guard generation == runGeneration else { return }
         isConnected = false
         await hub.disconnect(consumerID: consumerID)
     }
 
     public func stop() async {
+        runGeneration &+= 1
         await hub.disconnect(consumerID: consumerID)
         isConnected = false
     }

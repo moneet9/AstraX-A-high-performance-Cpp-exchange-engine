@@ -1,2 +1,3 @@
 ASTRAX_API_URL = https://api.astrax.invalid
 ASTRAX_CERT_PINS =
+APS_ENVIRONMENT = production

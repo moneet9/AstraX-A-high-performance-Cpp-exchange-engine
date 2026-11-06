@@ -6,13 +6,15 @@ public struct AccountView: View {
     @Bindable private var session: SessionViewModel
     let api: APIClient
     let accountID: Int64
+    @Bindable private var pushRegistration: PushRegistration
     @State private var confirmDelete = false
     @State private var errorMessage: String?
 
-    public init(session: SessionViewModel, api: APIClient, accountID: Int64) {
+    public init(session: SessionViewModel, api: APIClient, accountID: Int64, pushRegistration: PushRegistration) {
         self.session = session
         self.api = api
         self.accountID = accountID
+        self.pushRegistration = pushRegistration
     }
 
     public var body: some View {
@@ -25,6 +27,13 @@ public struct AccountView: View {
                 Section("Risk disclosure") {
                     Text("AstraX is a paper-trading simulator. Orders, balances, prices, and fills are simulated. This app is not a broker, does not handle real funds, and does not provide financial advice.")
                         .font(.footnote).foregroundStyle(AstraXTheme.secondaryText)
+                }.listRowBackground(AstraXTheme.surface)
+                Section("Notifications") {
+                    LabeledContent("Fill alerts", value: pushRegistration.status)
+                    Button("Enable fill notifications") { Task { await pushRegistration.enable() } }
+                    if let error = pushRegistration.errorMessage {
+                        Text(error).font(.footnote).foregroundStyle(AstraXTheme.negative)
+                    }
                 }.listRowBackground(AstraXTheme.surface)
                 Section {
                     Button("Sign out", role: .destructive) { Task { await session.logout() } }

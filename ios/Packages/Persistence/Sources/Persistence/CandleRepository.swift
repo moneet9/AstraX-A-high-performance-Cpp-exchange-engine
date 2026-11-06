@@ -33,21 +33,30 @@ public actor CandleRepository {
     }
 
     public func save(_ candles: [Candle], symbol: String) throws {
+        guard let oldest = candles.map(\.timestamp).min(), let newest = candles.map(\.timestamp).max() else { return }
         let context = ModelContext(container)
+        let symbolKey = symbol
+        let existingDescriptor = FetchDescriptor<StoredCandle>(
+            predicate: #Predicate { $0.symbol == symbolKey && $0.timestamp >= oldest && $0.timestamp <= newest })
+        let existing = try context.fetch(existingDescriptor)
+        var byTimestamp = Dictionary(uniqueKeysWithValues: existing.map { ($0.timestamp, $0) })
         for candle in candles {
-            let key = "\(symbol):\(candle.timestamp)"
-            var descriptor = FetchDescriptor<StoredCandle>(predicate: #Predicate { $0.key == key })
-            descriptor.fetchLimit = 1
-            if let stored = try context.fetch(descriptor).first {
+            if let stored = byTimestamp[candle.timestamp] {
                 stored.openTicks = candle.openTicks
                 stored.highTicks = candle.highTicks
                 stored.lowTicks = candle.lowTicks
                 stored.closeTicks = candle.closeTicks
                 stored.volume = candle.volume
             } else {
-                context.insert(StoredCandle(symbol: symbol, candle: candle))
+                let stored = StoredCandle(symbol: symbol, candle: candle)
+                context.insert(stored)
+                byTimestamp[candle.timestamp] = stored
             }
         }
+        let cutoff = newest - 2_000 * 60 * 1_000_000_000
+        let retentionDescriptor = FetchDescriptor<StoredCandle>(
+            predicate: #Predicate { $0.symbol == symbolKey && $0.timestamp < cutoff })
+        for stored in try context.fetch(retentionDescriptor) { context.delete(stored) }
         try context.save()
     }
 

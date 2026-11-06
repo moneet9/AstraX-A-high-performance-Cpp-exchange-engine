@@ -45,6 +45,11 @@ public final class OrdersViewModel {
         await refresh()
     }
 
+    public func resume() async {
+        await marketData.connect(symbol: "ASTR", consumerID: consumerID)
+        await refresh()
+    }
+
     public func stop() {
         updatesTask?.cancel(); updatesTask = nil
         executionTask?.cancel(); executionTask = nil

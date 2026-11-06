@@ -13,6 +13,8 @@ extension APIClient: TradingAPI {}
 public actor OrderManager {
     private let api: any TradingAPI
     private var states: [String: OrderStateSnapshot] = [:]
+    private var appliedExecutionIDs: Set<Int64> = []
+    private var appliedExecutionOrder: [Int64] = []
     private var continuations: [UUID: AsyncStream<[OrderStateSnapshot]>.Continuation] = [:]
 
     public init(api: any TradingAPI) { self.api = api }
@@ -85,6 +87,11 @@ public actor OrderManager {
 
     public func load(accountID: Int64) async throws -> [OrderStateSnapshot] {
         let records = try await api.orders(accountID: accountID)
+        let serverIDs = Set(records.map(\.id))
+        states = states.filter { _, state in
+            guard let serverID = state.serverID else { return true }
+            return !serverIDs.contains(serverID)
+        }
         for order in records {
             let lifecycle: OrderLifecycle = switch order.status.lowercased() {
             case "filled": .filled
@@ -110,9 +117,17 @@ public actor OrderManager {
 
     public func apply(_ event: PrivateExecutionEvent) {
         for fill in event.fills {
+            if let executionID = fill.executionID {
+                guard appliedExecutionIDs.insert(executionID).inserted else { continue }
+                appliedExecutionOrder.append(executionID)
+                if appliedExecutionOrder.count > 4_096 {
+                    appliedExecutionIDs.remove(appliedExecutionOrder.removeFirst())
+                }
+            }
             guard let entry = states.first(where: { $0.value.serverID == fill.orderID }) else { continue }
             let old = entry.value
-            let filled = min(old.request.quantity, old.filledQuantity + fill.quantity)
+            let reportedFilled = fill.filledQuantity ?? (old.filledQuantity + fill.quantity)
+            let filled = min(old.request.quantity, max(old.filledQuantity, reportedFilled))
             let lifecycle: OrderLifecycle = filled >= old.request.quantity ? .filled : .partiallyFilled
             states[entry.key] = OrderStateSnapshot(id: old.id, serverID: old.serverID,
                 request: old.request, lifecycle: lifecycle, filledQuantity: filled)

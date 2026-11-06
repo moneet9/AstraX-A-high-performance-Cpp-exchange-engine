@@ -3,9 +3,12 @@ import SwiftUI
 import Trading
 
 public struct OrdersView: View {
+    @Environment(\.scenePhase) private var scenePhase
+    private let isActive: Bool
     @State private var model: OrdersViewModel
 
-    public init(dependencies: AppDependencies, accountID: Int64) {
+    public init(dependencies: AppDependencies, accountID: Int64, isActive: Bool = true) {
+        self.isActive = isActive
         _model = State(initialValue: OrdersViewModel(manager: dependencies.orderManager,
             marketData: dependencies.marketData, accountID: accountID))
     }
@@ -53,7 +56,10 @@ public struct OrdersView: View {
             .background(AstraXTheme.background)
             .navigationTitle("Orders")
             .toolbar { ToolbarItem(placement: .topBarTrailing) { Button { Task { await model.refresh() } } label: { Image(systemName: "arrow.clockwise") } } }
-            .task { await model.start() }
+            .task(id: "\(isActive)-\(scenePhase == .active)") {
+                guard isActive, scenePhase == .active else { model.stop(); return }
+                await model.start()
+            }
             .onDisappear { model.stop() }
             .alert("Orders", isPresented: Binding(get: { model.errorMessage != nil }, set: { if !$0 { model.errorMessage = nil } })) {
                 Button("OK", role: .cancel) { model.errorMessage = nil }

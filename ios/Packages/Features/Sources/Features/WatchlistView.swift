@@ -4,16 +4,20 @@ import SwiftUI
 
 public struct WatchlistView: View {
     let dependencies: AppDependencies
+    let isActive: Bool
 
-    public init(dependencies: AppDependencies) { self.dependencies = dependencies }
+    public init(dependencies: AppDependencies, isActive: Bool = true) {
+        self.dependencies = dependencies
+        self.isActive = isActive
+    }
 
     public var body: some View {
         NavigationStack {
             List {
                 NavigationLink {
-                    MarketScreen(dependencies: dependencies)
+                    MarketScreen(dependencies: dependencies, isActive: isActive)
                 } label: {
-                    WatchlistRow(dependencies: dependencies)
+                    WatchlistRow(dependencies: dependencies, isActive: isActive)
                 }
                 .listRowBackground(AstraXTheme.surface)
                 .accessibilityHint("Opens the live chart and level two order book")
@@ -32,9 +36,12 @@ public struct WatchlistView: View {
 }
 
 private struct WatchlistRow: View {
+    @Environment(\.scenePhase) private var scenePhase
+    let isActive: Bool
     @State private var model: MarketViewModel
 
-    init(dependencies: AppDependencies) {
+    init(dependencies: AppDependencies, isActive: Bool) {
+        self.isActive = isActive
         _model = State(initialValue: MarketViewModel(hub: dependencies.marketData,
             api: dependencies.api, repository: dependencies.candleRepository))
     }
@@ -46,7 +53,7 @@ private struct WatchlistRow: View {
                 Text("AstraX Simulated Asset").font(.caption).foregroundStyle(AstraXTheme.secondaryText)
             }
             Spacer(minLength: 8)
-            LivePriceChart(points: model.chartPoints)
+            LivePriceChart(points: model.chartPoints, latestPriceTicks: model.book?.midpointTicks)
                 .frame(width: 76, height: 32)
             VStack(alignment: .trailing, spacing: 5) {
                 Text(model.book?.midpointTicks.map { PriceFormatting.string(ticks: $0) } ?? "—")
@@ -56,7 +63,10 @@ private struct WatchlistRow: View {
             }
         }
         .padding(.vertical, 8)
-        .task(id: model.symbol) { await model.start() }
+        .task(id: "\(model.symbol)-\(isActive)-\(scenePhase == .active)") {
+            guard isActive, scenePhase == .active else { await model.stop(); return }
+            await model.start()
+        }
         .onDisappear { Task { await model.stop() } }
     }
 }

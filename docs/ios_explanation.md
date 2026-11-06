@@ -62,7 +62,7 @@ The screen uses `.task(id: model.symbol)` for subscription lifetime and stops on
 
 ### Not implemented as complete UI features
 
-There is no finished AI insights screen, full candlestick/indicator screen, multi-symbol editable watchlist, push-notification UX, demo reviewer account package, full iPad-specific layout, snapshot-test suite, or login-to-fill XCUITest. Strings are prepared for localization, but translation completeness, Dynamic Type, VoiceOver, Reduce Motion, and color-blind testing still require an audit.
+There is no finished AI insights screen, full candlestick/indicator screen, multi-symbol editable watchlist, demo reviewer account package, full iPad-specific layout, snapshot-test suite, or login-to-fill XCUITest. Fill notifications now have an opt-in client flow and APNs token registration, but require valid Apple push credentials and have not been device-verified. Strings are prepared for localization, but translation completeness, Dynamic Type, VoiceOver, Reduce Motion, and color-blind testing still require an audit.
 
 ## 4. Concurrency, ownership, and UI smoothness
 

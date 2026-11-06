@@ -14,7 +14,7 @@ Release builds fail closed for HTTPS unless `ASTRAX_CERT_PINS` is populated with
 - Watchlist quote, live line chart, and top-five level-two book.
 - Market, limit, stop, stop-limit, iceberg, and pegged order ticket with GTC/IOC/FOK, local validation, review sheet, Face ID confirmation, and haptic result.
 - Orders with live private execution events and cancellation; portfolio and account screens.
-- Paper trading disclosure, account deletion, Keychain `ThisDeviceOnly` sessions, app-switcher privacy cover, local candle cache, and `PrivacyInfo.xcprivacy`.
+- Paper trading disclosure, account deletion, Keychain `ThisDeviceOnly` sessions, app-switcher privacy cover, local candle cache, opt-in APNs fill alerts, and `PrivacyInfo.xcprivacy`.
 
 Every submitted price and quantity stays in `Int64` engine units. `Decimal` is used only when converting a typed display price into integer ticks or formatting a value for display. Buy and sell use text labels and blue/coral cues so color is not the only signal.
 
@@ -32,7 +32,7 @@ Every submitted price and quantity stays in `Int64` engine units. `Decimal` is u
 
 ## Threading model
 
-SwiftUI view models are `@MainActor` and receive immutable `Equatable` values. Network I/O and JSON decoding run in `APIClient` and `MarketDataHub` actors. `OrderBookStore`, `CandleAggregator`, and `OrderManager` are actors. Candle aggregation and chart normalization run in the `CandleAggregator` actor. Stream consumers are tied to SwiftUI `.task` lifetimes, use newest-value buffering, and cancel their tasks when views disappear. The server publishes at 10 Hz; the client coalesces faster messages before publishing snapshots.
+SwiftUI view models are `@MainActor` and receive immutable `Equatable` values. Network I/O and JSON decoding run in `APIClient` and `MarketDataHub` actors. `OrderBookStore`, `CandleAggregator`, and `OrderManager` are actors. Candle aggregation and chart normalization run in the `CandleAggregator` actor. Market and order subscriptions follow the selected tab and app foreground state. Quote streams use newest-value buffering; execution streams preserve events, identify fills by server execution ID, and the Orders screen refreshes authoritative state on resume. The server publishes at 10 Hz; the client coalesces faster market messages before publishing snapshots.
 
 `MarketDataHub` emits an `OSSignposter` interval named “MarketData decode to view model”. Inspect it with Instruments alongside SwiftUI, Time Profiler, and Hitches. The iOS client has not yet been profiled on a physical device; no frame-rate or latency target is claimed.
 

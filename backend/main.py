@@ -133,10 +133,14 @@ def _apply_fills(session: Session, fills, submitted_engine_id: int):
             account = session.get(Account, row.account_id)
             if account is None:
                 continue
-            session.add(Execution(order_id=row.id, price_ticks=price, quantity=qty, side=row.side))
+            execution = Execution(order_id=row.id, price_ticks=price, quantity=qty, side=row.side)
+            session.add(execution)
+            session.flush()
             _apply_position_fill(session, account, row, qty, price)
-            user_events[row.account_id].append({"order_id": row.id, "symbol": row.symbol, "side": row.side,
-                                                "price_ticks": price, "quantity": qty})
+            user_events[row.account_id].append({"execution_id": execution.id, "order_id": row.id,
+                                                "symbol": row.symbol, "side": row.side,
+                                                "price_ticks": price, "quantity": qty,
+                                                "filled_quantity": row.filled_quantity})
     return user_events
 
 

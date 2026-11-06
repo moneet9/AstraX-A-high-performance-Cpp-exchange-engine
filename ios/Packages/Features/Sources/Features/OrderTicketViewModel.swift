@@ -38,8 +38,16 @@ public final class OrderTicketViewModel {
         guard let quantity = Int64(quantityText), quantity > 0 else { throw TicketError.invalidQuantity }
         let price = kind == .market || kind == .stop || kind == .pegged ? 0 : try Self.parsePrice(priceText)
         let stopPrice = kind == .stop || kind == .stopLimit ? try Self.parsePrice(stopPriceText) : 0
-        let visible = kind == .iceberg ? Int64(visibleQuantityText) ?? 0 : 0
-        let peg = kind == .pegged ? Int64(pegOffsetText) ?? 0 : 0
+        let visible: Int64
+        if kind == .iceberg {
+            guard let parsed = Int64(visibleQuantityText) else { throw TicketError.invalidVisibleQuantity }
+            visible = parsed
+        } else { visible = 0 }
+        let peg: Int64
+        if kind == .pegged {
+            guard let parsed = Int64(pegOffsetText) else { throw TicketError.invalidPegOffset }
+            peg = parsed
+        } else { peg = 0 }
         let order = OrderRequestDTO(symbol: "ASTR", side: side, type: kind, quantity: quantity,
                                     priceTicks: price, stopPriceTicks: stopPrice,
                                     visibleQuantity: visible, pegOffsetTicks: peg, tif: tif)
@@ -98,11 +106,13 @@ public final class OrderTicketViewModel {
 }
 
 private enum TicketError: LocalizedError {
-    case invalidQuantity, invalidPrice, biometricCancelled
+    case invalidQuantity, invalidPrice, invalidVisibleQuantity, invalidPegOffset, biometricCancelled
     var errorDescription: String? {
         switch self {
         case .invalidQuantity: "Enter a positive whole-number quantity."
         case .invalidPrice: "Enter a valid price with up to four decimal places."
+        case .invalidVisibleQuantity: "Enter a valid whole-number visible quantity."
+        case .invalidPegOffset: "Enter a whole-number peg offset in ticks."
         case .biometricCancelled: "Order confirmation was cancelled."
         }
     }

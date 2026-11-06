@@ -141,6 +141,11 @@ public actor APIClient {
         return response.positions
     }
 
+    public func registerPushToken(_ token: String) async throws {
+        let _: PushTokenResponse = try await send(path: "/v1/push-tokens", method: "POST",
+            headers: ["X-APNS-Token": token])
+    }
+
     public func deleteAccount() async throws {
         struct Confirmation: Encodable, Sendable { let confirmation = "DELETE" }
         let _: DeleteResponse = try await send(path: "/v1/account", method: "DELETE",
@@ -235,3 +240,4 @@ private struct PositionsResponse: Decodable, Sendable { let positions: [Position
 private struct ReplaceResponse: Decodable, Sendable { let replacement: OrderDTO }
 private struct LogoutResponse: Decodable, Sendable { let ok: Bool }
 private struct DeleteResponse: Decodable, Sendable { let deleted: Bool }
+private struct PushTokenResponse: Decodable, Sendable { let ok: Bool }
